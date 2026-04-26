@@ -108,6 +108,19 @@ code {
   }
 }
 
+@keyframes progress-slide {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(400%);
+  }
+}
+
+.progress-slide {
+  animation: progress-slide 1.5s ease-in-out infinite;
+}
+
 .loading-shimmer {
   background-position: -100% top;
   text-fill-color: transparent;

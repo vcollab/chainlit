@@ -1,11 +1,17 @@
 import { Navigate } from 'react-router-dom';
 import { useRecoilValue } from 'recoil';
 
-import { sideViewState, useAuth, useConfig } from '@chainlit/react-client';
+import {
+  loadingState,
+  sideViewState,
+  useAuth,
+  useConfig
+} from '@chainlit/react-client';
 
 import ChatSettingsSidebar from '@/components/ChatSettings/ChatSettingsSidebar';
 import ElementSideView from '@/components/ElementSideView';
 import LeftSidebar from '@/components/LeftSidebar';
+import ProgressBar from '@/components/ProgressBar';
 import ArtifactsPanel from '@/components/SidePanel/ArtifactsPanel';
 import { PanelErrorBoundary } from '@/components/SidePanel/ErrorBoundary';
 import SourcesPanel from '@/components/SidePanel/SourcesPanel';
@@ -27,6 +33,7 @@ const Page = ({ children }: Props) => {
   const userEnv = useRecoilValue(userEnvState);
   const sideView = useRecoilValue(sideViewState);
   const activePanel = useRecoilValue(activeSidePanelState);
+  const loading = useRecoilValue(loadingState);
 
   if (config?.userEnv) {
     for (const key of config.userEnv || []) {
@@ -39,6 +46,7 @@ const Page = ({ children }: Props) => {
   const mainContent = (
     <div className="flex flex-col h-full w-full">
       <Header />
+      {loading ? <ProgressBar /> : null}
       <ResizablePanelGroup
         direction="horizontal"
         className="flex flex-row flex-grow"

@@ -227,7 +227,11 @@ copilot_build_dir = get_build_dir(os.path.join("libs", "copilot"), "copilot")
 
 app = FastAPI(lifespan=lifespan)
 
-sio = socketio.AsyncServer(cors_allowed_origins=[], async_mode="asgi")
+sio = socketio.AsyncServer(
+    cors_allowed_origins=[],
+    async_mode="asgi",
+    max_http_buffer_size=10 * 1024 * 1024,  # 10MB — default 1MB too small for large threads
+)
 
 asgi_app = socketio.ASGIApp(socketio_server=sio, socketio_path="")
 

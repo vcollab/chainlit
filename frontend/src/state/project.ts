@@ -9,3 +9,10 @@ export const chatSettingsSidebarOpenState = atom<boolean>({
   key: 'chatSettingsSidebarOpen',
   default: false
 });
+
+export type SidePanel = 'sources' | 'artifacts' | null;
+
+export const activeSidePanelState = atom<SidePanel>({
+  key: 'activeSidePanel',
+  default: null
+});

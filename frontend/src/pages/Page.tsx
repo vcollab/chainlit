@@ -6,11 +6,15 @@ import { sideViewState, useAuth, useConfig } from '@chainlit/react-client';
 import ChatSettingsSidebar from '@/components/ChatSettings/ChatSettingsSidebar';
 import ElementSideView from '@/components/ElementSideView';
 import LeftSidebar from '@/components/LeftSidebar';
+import ArtifactsPanel from '@/components/SidePanel/ArtifactsPanel';
+import { PanelErrorBoundary } from '@/components/SidePanel/ErrorBoundary';
+import SourcesPanel from '@/components/SidePanel/SourcesPanel';
 import { TaskList } from '@/components/Tasklist';
 import { Header } from '@/components/header';
 import { ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 
+import { activeSidePanelState } from '@/state/project';
 import { userEnvState } from 'state/user';
 
 type Props = {
@@ -22,6 +26,7 @@ const Page = ({ children }: Props) => {
   const { data } = useAuth();
   const userEnv = useRecoilValue(userEnvState);
   const sideView = useRecoilValue(sideViewState);
+  const activePanel = useRecoilValue(activeSidePanelState);
 
   if (config?.userEnv) {
     for (const key of config.userEnv || []) {
@@ -47,7 +52,19 @@ const Page = ({ children }: Props) => {
             {children}
           </div>
         </ResizablePanel>
-        {sideView ? <ElementSideView /> : <TaskList isMobile={false} />}
+        {activePanel === 'sources' ? (
+          <PanelErrorBoundary name="Sources">
+            <SourcesPanel />
+          </PanelErrorBoundary>
+        ) : activePanel === 'artifacts' ? (
+          <PanelErrorBoundary name="Artifacts">
+            <ArtifactsPanel />
+          </PanelErrorBoundary>
+        ) : sideView ? (
+          <ElementSideView />
+        ) : (
+          <TaskList isMobile={false} />
+        )}
         {showSettingsSidebar && <ChatSettingsSidebar />}
       </ResizablePanelGroup>
     </div>

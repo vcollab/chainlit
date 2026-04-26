@@ -24,11 +24,13 @@ import { Translator } from 'components/i18n';
 import { chatSettingsSidebarOpenState } from '@/state/project';
 
 import ApiKeys from './ApiKeys';
+import ArtifactsButton from './ArtifactsButton';
 import ChatProfiles from './ChatProfiles';
 import NewChatButton from './NewChat';
 import ReadmeButton from './Readme';
 import ShareButton from './Share';
 import SidebarTrigger from './SidebarTrigger';
+import SourcesButton from './SourcesButton';
 import { ThemeToggle } from './ThemeToggle';
 import UserNav from './UserNav';
 
@@ -122,6 +124,8 @@ const Header = memo(() => {
             </TooltipContent>
           </Tooltip>
         )}
+        <SourcesButton />
+        <ArtifactsButton />
         <ThemeToggle />
         <UserNav />
       </div>

@@ -9,6 +9,7 @@ import {
 } from '@chainlit/react-client';
 
 import Icon from '@/components/Icon';
+import SpinnerSpokes from '@/components/SpinnerSpokes';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -23,9 +24,16 @@ interface Props {
   hide?: boolean;
   isError?: boolean;
   iconName?: string;
+  iconSpin?: boolean;
 }
 
-const MessageAvatar = ({ author, hide, isError, iconName }: Props) => {
+const MessageAvatar = ({
+  author,
+  hide,
+  isError,
+  iconName,
+  iconSpin
+}: Props) => {
   const apiClient = useContext(ChainlitContext);
   const { chatProfile } = useChatSession();
   const { config } = useConfig();
@@ -57,8 +65,12 @@ const MessageAvatar = ({ author, hide, isError, iconName }: Props) => {
     );
   }
 
-  // Render icon or avatar based on iconName
-  const avatarContent = iconName ? (
+  // Render spinner, icon, or avatar based on iconSpin/iconName
+  const avatarContent = iconSpin ? (
+    <span className="inline-flex mt-[3px]">
+      <SpinnerSpokes size={avatarSize ?? 20} />
+    </span>
+  ) : iconName ? (
     <span className="inline-flex mt-[3px]">
       <Icon name={iconName} size={avatarSize ?? 20} /> {/* 20 => h-5 w-5 */}
     </span>

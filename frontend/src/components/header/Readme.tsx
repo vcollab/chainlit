@@ -1,7 +1,6 @@
 import { useConfig } from '@chainlit/react-client';
 
 import { Markdown } from '@/components/Markdown';
-import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -12,6 +11,8 @@ import {
 import { Translator } from 'components/i18n';
 
 import { useLayoutMaxWidth } from 'hooks/useLayoutMaxWidth';
+
+import InfoButton from './InfoButton';
 
 export default function ReadmeButton() {
   const { config } = useConfig();
@@ -24,9 +25,7 @@ export default function ReadmeButton() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button id="readme-button" variant="ghost">
-          <Translator path="navigation.header.readme" />
-        </Button>
+        <InfoButton />
       </DialogTrigger>
       <DialogContent className="flex flex-col h-screen w-screen max-w-screen max-h-screen border-none !rounded-none overflow-y-auto">
         <div

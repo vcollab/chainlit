@@ -1,21 +1,29 @@
+import {
+  ArrowLeft,
+  Braces,
+  CodeXml,
+  ExternalLink,
+  File,
+  FileSpreadsheet,
+  FileText,
+  Film,
+  Folder,
+  FolderArchive,
+  FolderOpen,
+  Image,
+  RefreshCw
+} from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useRecoilValue } from 'recoil';
-import {
-  Folder,
-  FolderOpen,
-  FileText,
-  Image,
-  File,
-  RefreshCw,
-  ArrowLeft,
-  ExternalLink
-} from 'lucide-react';
 
 import { currentThreadIdState } from '@chainlit/react-client';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ResizableHandle, ResizablePanel } from '@/components/ui/resizable';
+
+import PreviewRawSwitch from './PreviewRawSwitch';
+import Viewer from './Viewers/Viewer';
 
 const API_BASE = '/api';
 
@@ -35,40 +43,38 @@ function isFileInfo(node: ArtifactTree | FileInfo): node is FileInfo {
   return 'size' in node && 'name' in node;
 }
 
-function fileIcon(type: string) {
-  switch (type) {
-    case 'png':
-    case 'jpg':
-    case 'jpeg':
-    case 'gif':
-    case 'svg':
-      return <Image className="size-4 text-blue-500" />;
-    case 'md':
-    case 'txt':
-    case 'csv':
-    case 'json':
-      return <FileText className="size-4 text-muted-foreground" />;
-    case 'pdf':
-      return <FileText className="size-4 text-red-500" />;
-    default:
-      return <File className="size-4 text-muted-foreground" />;
+export function fileIcon(type: string) {
+  if (COMPRESSED_TYPES.includes(type)) {
+    return <FolderArchive className="size-4 text-muted-foreground" />;
   }
+  if (XML_TYPES.includes(type)) {
+    return <CodeXml className="size-4 text-red-500" />;
+  }
+  if (CODE_TYPES.includes(type)) {
+    return <Braces className="size-4 text-yellow-500" />;
+  }
+  if (EXCEL_TYPES.includes(type)) {
+    return <FileSpreadsheet className="size-4 text-green-500" />;
+  }
+  if (VIDEO_TYPES.includes(type)) {
+    return <Film className="size-4 text-purple-500" />;
+  }
+  if (IMAGE_TYPES.includes(type)) {
+    return <Image className="size-4 text-blue-500" />;
+  }
+  if (['pdf', ...TEXT_TYPES].includes(type)) {
+    return <FileText className="size-4 text-muted-foreground" />;
+  }
+  return <File className="size-4 text-muted-foreground" />;
 }
 
+const VIDEO_TYPES = ['mp4', 'webm', 'mov', 'avi', 'aac', 'm4a', 'ogg', 'wav'];
 const IMAGE_TYPES = ['png', 'jpg', 'jpeg', 'gif', 'svg', 'bmp', 'webp'];
-const TEXT_TYPES = [
-  'txt',
-  'md',
-  'csv',
-  'json',
-  'py',
-  'js',
-  'html',
-  'xml',
-  'yaml',
-  'yml',
-  'log'
-];
+const TEXT_TYPES = ['txt', 'md', 'csv', 'log'];
+const XML_TYPES = ['html', 'xml'];
+const EXCEL_TYPES = ['xlsx', 'csv', 'xls'];
+const CODE_TYPES = ['json', 'py', 'js', 'ts', 'jsx', 'tsx', 'yaml', 'yml'];
+const COMPRESSED_TYPES = ['zip', '7z'];
 
 // ── Tree node ───────────────────────────────────────────────────────────
 
@@ -129,39 +135,21 @@ function TreeNode({
 
 // ── File preview ────────────────────────────────────────────────────────
 
-function FilePreview({
-  file,
-  onBack
-}: {
-  file: FileInfo;
-  onBack: () => void;
-}) {
-  const [textContent, setTextContent] = useState<string | null>(null);
+function FilePreview({ file, onBack }: { file: FileInfo; onBack: () => void }) {
+  const [viewMode, setViewMode] = useState<'preview' | 'raw'>('preview');
+  const [showViewModeSwitch, setShowViewModeSwitch] = useState<boolean>(false);
   const url = `${API_BASE}/artifacts/preview/${encodeURIComponent(file.path)}`;
-
-  useEffect(() => {
-    if (TEXT_TYPES.includes(file.type)) {
-      fetch(url)
-        .then((r) => r.text())
-        .then(setTextContent)
-        .catch(() => setTextContent('Failed to load file.'));
-    }
-  }, [url, file.type]);
 
   return (
     <div className="flex flex-col h-full">
-      <div className="px-4 py-3 border-b flex items-center gap-2 shrink-0">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onBack}
-          className="-ml-2"
-        >
+      <div className="px-4 py-3 border-b flex items-center gap-1 shrink-0">
+        <Button variant="ghost" size="icon" onClick={onBack} className="-ml-2">
           <ArrowLeft className="size-4" />
         </Button>
-        <span className="text-sm font-medium truncate flex-1">
-          {file.name}
-        </span>
+        <span className="text-sm font-medium truncate flex-1">{file.name}</span>
+        {showViewModeSwitch && (
+          <PreviewRawSwitch viewMode={viewMode} setViewMode={setViewMode} />
+        )}
         <a href={url} target="_blank" rel="noopener noreferrer">
           <Button variant="ghost" size="icon">
             <ExternalLink className="size-3" />
@@ -169,32 +157,13 @@ function FilePreview({
         </a>
       </div>
       <div className="flex-1 overflow-auto p-4">
-        {file.type === 'pdf' && (
-          <iframe
-            src={url}
-            className="w-full h-full border-0 rounded"
-            title={file.name}
-          />
-        )}
-        {IMAGE_TYPES.includes(file.type) && (
-          <img
-            src={url}
-            alt={file.name}
-            className="max-w-full h-auto rounded"
-          />
-        )}
-        {TEXT_TYPES.includes(file.type) && textContent !== null && (
-          <pre className="text-xs bg-muted p-3 rounded overflow-auto whitespace-pre-wrap font-mono">
-            {textContent}
-          </pre>
-        )}
-        {!['pdf', ...IMAGE_TYPES, ...TEXT_TYPES].includes(file.type) && (
-          <div className="text-center py-8 text-muted-foreground">
-            <p className="text-sm">
-              Preview not available for .{file.type} files
-            </p>
-          </div>
-        )}
+        <Viewer
+          fileName={file.name}
+          url={url}
+          viewMode={viewMode}
+          setViewMode={setViewMode}
+          setShowViewModeSwitch={setShowViewModeSwitch}
+        />
       </div>
     </div>
   );

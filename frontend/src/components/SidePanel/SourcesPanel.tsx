@@ -1,22 +1,16 @@
+import { ArrowLeft, ExternalLink, Plus, Trash2, Upload } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRecoilValue } from 'recoil';
-import {
-  FileText,
-  Image,
-  FileSpreadsheet,
-  Film,
-  Trash2,
-  Plus,
-  Upload,
-  ArrowLeft,
-  ExternalLink
-} from 'lucide-react';
 
 import { currentThreadIdState } from '@chainlit/react-client';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ResizableHandle, ResizablePanel } from '@/components/ui/resizable';
+
+import { fileIcon } from './ArtifactsPanel';
+import PreviewRawSwitch from './PreviewRawSwitch';
+import Viewer from './Viewers/Viewer';
 
 interface FileInfo {
   name: string;
@@ -28,80 +22,27 @@ interface FileInfo {
 
 const API_BASE = '/api';
 
-function fileIcon(type: string) {
-  switch (type) {
-    case 'pdf':
-      return <FileText className="size-8 text-red-500" />;
-    case 'png':
-    case 'jpg':
-    case 'jpeg':
-    case 'gif':
-    case 'svg':
-    case 'bmp':
-      return <Image className="size-8 text-blue-500" />;
-    case 'csv':
-    case 'xlsx':
-      return <FileSpreadsheet className="size-8 text-green-500" />;
-    case 'mp4':
-    case 'webm':
-      return <Film className="size-8 text-purple-500" />;
-    default:
-      return <FileText className="size-8 text-muted-foreground" />;
-  }
-}
-
 function formatSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-const IMAGE_TYPES = ['png', 'jpg', 'jpeg', 'gif', 'svg', 'bmp', 'webp'];
-const TEXT_TYPES = [
-  'txt',
-  'md',
-  'csv',
-  'json',
-  'py',
-  'js',
-  'html',
-  'xml',
-  'yaml',
-  'yml',
-  'log'
-];
-
-function FilePreview({
-  file,
-  onBack
-}: {
-  file: FileInfo;
-  onBack: () => void;
-}) {
-  const [textContent, setTextContent] = useState<string | null>(null);
+function FilePreview({ file, onBack }: { file: FileInfo; onBack: () => void }) {
+  const [viewMode, setViewMode] = useState<'preview' | 'raw'>('preview');
+  const [showViewModeSwitch, setShowViewModeSwitch] = useState<boolean>(false);
   const url = `${API_BASE}/sources/preview/${encodeURIComponent(file.name)}`;
-
-  useEffect(() => {
-    if (TEXT_TYPES.includes(file.type)) {
-      fetch(url)
-        .then((r) => r.text())
-        .then(setTextContent)
-        .catch(() => setTextContent('Failed to load file.'));
-    }
-  }, [url, file.type]);
 
   return (
     <div className="flex flex-col h-full">
       <div className="px-4 py-3 border-b flex items-center gap-2 shrink-0">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onBack}
-          className="-ml-2"
-        >
+        <Button variant="ghost" size="icon" onClick={onBack} className="-ml-2">
           <ArrowLeft className="size-4" />
         </Button>
         <span className="text-sm font-medium truncate flex-1">{file.name}</span>
+        {showViewModeSwitch && (
+          <PreviewRawSwitch viewMode={viewMode} setViewMode={setViewMode} />
+        )}
         <a href={url} target="_blank" rel="noopener noreferrer">
           <Button variant="ghost" size="icon">
             <ExternalLink className="size-3" />
@@ -109,26 +50,13 @@ function FilePreview({
         </a>
       </div>
       <div className="flex-1 overflow-auto p-4">
-        {file.type === 'pdf' && (
-          <iframe
-            src={url}
-            className="w-full h-full border-0 rounded"
-            title={file.name}
-          />
-        )}
-        {IMAGE_TYPES.includes(file.type) && (
-          <img src={url} alt={file.name} className="max-w-full h-auto rounded" />
-        )}
-        {TEXT_TYPES.includes(file.type) && textContent !== null && (
-          <pre className="text-xs bg-muted p-3 rounded overflow-auto whitespace-pre-wrap font-mono">
-            {textContent}
-          </pre>
-        )}
-        {!['pdf', ...IMAGE_TYPES, ...TEXT_TYPES].includes(file.type) && (
-          <div className="text-center py-8 text-muted-foreground">
-            <p className="text-sm">Preview not available for .{file.type} files</p>
-          </div>
-        )}
+        <Viewer
+          url={url}
+          fileName={file.name}
+          viewMode={viewMode}
+          setViewMode={setViewMode}
+          setShowViewModeSwitch={setShowViewModeSwitch}
+        />
       </div>
     </div>
   );
@@ -264,7 +192,11 @@ export default function SourcesPanel() {
   return (
     <>
       <ResizableHandle className="sm:hidden md:block bg-transparent" />
-      <ResizablePanel minSize={10} defaultSize={30} className="md:flex flex-col flex-grow sm:hidden">
+      <ResizablePanel
+        minSize={10}
+        defaultSize={30}
+        className="md:flex flex-col flex-grow sm:hidden"
+      >
         <aside className="relative flex-grow overflow-auto mr-4 mb-4">
           <Card className="overflow-auto h-full relative flex flex-col">
             <CardContent className="flex flex-col flex-grow p-0">

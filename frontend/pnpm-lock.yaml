@@ -126,6 +126,9 @@ importers:
       plotly.js:
         specifier: ^2.27.0
         version: 2.30.1(mapbox-gl@1.13.3)
+      plotly.js-basic-dist-min:
+        specifier: ^3.5.1
+        version: 3.5.1
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -3759,6 +3762,9 @@ packages:
 
   pkg-types@1.0.3:
     resolution: {integrity: sha512-nN7pYi0AQqJnoLPC9eHFQ8AcyaixBUOwvqc5TDnIKCMEE6I0y8P7OKA7fPexsXGCGxQDl/cmrLAp26LhcwxZ4A==}
+
+  plotly.js-basic-dist-min@3.5.1:
+    resolution: {integrity: sha512-OZ/FWJkussD6gm2W2GmLB2/7x583wplk50Jl5WMhVqT06YGsb+Navzl1GHexZdpM0MLRQNlQJ7cB1dOcnaRAEg==}
 
   plotly.js@2.30.1:
     resolution: {integrity: sha512-KE3KeM4B6qtjPU7FGOxklmwYua4nWGgr48BRMWZVysZjphlSaQLzvUAieFlUCfPBPfJIRBLxFQy1KHMIQgfwrA==}
@@ -8530,6 +8536,8 @@ snapshots:
       jsonc-parser: 3.2.1
       mlly: 1.6.1
       pathe: 1.1.2
+
+  plotly.js-basic-dist-min@3.5.1: {}
 
   plotly.js@2.30.1(mapbox-gl@1.13.3):
     dependencies:
